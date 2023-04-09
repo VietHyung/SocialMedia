@@ -38,8 +38,34 @@ const Navbar = () => {
   const background = theme.palette.background.default;
   const primaryLight = theme.palette.primary.light;
   const alt = theme.palette.background.alt;
+  const token = useSelector((state) => state.token);
+  const loggedInUserId = useSelector((state) => state.user._id);
 
   const fullName = `${user.firstName} ${user.lastName}`;
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+
+  const handleSearchInputChange = (event) => {
+    setSearchQuery(event.target.value);
+    searchUsers(event.target.value);
+  };
+
+  const searchUsers = async (query) => {
+    const response = await fetch(`http://localhost:3001/users/search?q=${query}`,{
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      }
+    });
+    if (!response.ok) {
+      throw new Error('No results found');
+    }
+    console.log(response);
+    // const data = await response.json();
+    // setSearchResults(data);
+  };
 
   return (
     <FlexBetween padding="1rem 6%" backgroundColor={alt}>
@@ -65,10 +91,23 @@ const Navbar = () => {
             gap="3rem"
             padding="0.1rem 1.5rem"
           >
-            <InputBase placeholder="Search..." />
+            <InputBase placeholder="Search users..." 
+              value={searchQuery}
+              onChange={handleSearchInputChange}
+            />
             <IconButton>
               <Search />
             </IconButton>
+            {searchResults.length > 0 && (
+              <ul>
+                {searchResults.map((user) => (
+                  <li key={user.id}>
+                    <img src={user.profilePicture} alt={`${user.firstName} ${user.lastName}`} />
+                    <span>{`${user.firstName} ${user.lastName}`}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </FlexBetween>
         )}
       </FlexBetween>

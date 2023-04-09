@@ -11,6 +11,36 @@ export const getUser = async (req, res) => {
   }
 };
 
+export const getAllUser = async (req, res) => {
+  try {
+    const users = await User.find();
+    res.status(200).json(users);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+export const getUsersByName = async (req, res) => {
+  try {
+    const name = req.params.name;
+    const nameRegex = new RegExp(name, 'i');
+    const users = await User.find({
+      $or: [
+        { firstName: { $regex: nameRegex } },
+        { lastName: { $regex: nameRegex } }
+      ]
+    });
+
+    if (users.length === 0) {
+      return res.status(404).json({ message: 'No users found' });
+    }
+
+    res.status(200).json(users);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 export const getUserFriends = async (req, res) => {
   try {
     const { id } = req.params;
